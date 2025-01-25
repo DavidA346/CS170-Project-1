@@ -19,17 +19,26 @@ using namespace std;
 //Node struct that encapsulates all the necessary info for a node
 struct Node {
     int puzzle[3][3];
-    int cost;
+    int cost; //g(n)
+    int heuristic; //h(n)
+    int totalCost; //f(n) = g(n) + h(n)
 
-    //Constructor that sets the node's puzzle to given puzzle
-    Node(int currentPuzzle[3][3], int currentCost = 0) {
+    //Constructor that sets the node's puzzle to given puzzle as well as all the costs
+    Node(int currentPuzzle[3][3], int currentCost = 0, int currentHeuristic = 0) {
         cost = currentCost;
+        heuristic = currentHeuristic;
+        totalCost = cost + heuristic;
 
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 puzzle[i][j] = currentPuzzle[i][j];
             }
         }
+    }
+
+    //Have to overload '>' operator in order to compare two node costs for priority queue
+    bool operator>(const Node& rhs) {
+        return totalCost > rhs.totalCost;
     }
 };
 
@@ -51,8 +60,47 @@ bool isGoalState(Node* currentState) {
     return true;
 }
 
+//Helper function that returns the number of misplaced tiles
+int misplacedTiles(Node* problem) {
+    int count = 0;
+
+    if (problem->puzzle[0][0] != 1) {
+        ++count;
+    }
+
+    if (problem->puzzle[0][1] != 2) {
+        ++count;
+    }
+
+    if (problem->puzzle[0][2] != 3) {
+        ++count;
+    }
+
+    if (problem->puzzle[1][0] != 4) {
+        ++count;
+    }
+
+    if (problem->puzzle[1][1] != 5) {
+        ++count;
+    }
+
+    if (problem->puzzle[1][2] != 6) {
+        ++count;
+    }
+
+    if (problem->puzzle[2][0] != 7) {
+        ++count;
+    }
+
+    if (problem->puzzle[2][1] != 8) {
+        ++count;
+    }
+
+    return count;
+}
+
 //Helper function that creates the children of the current state
-vector<Node*> createChildren(Node* currentState) {
+vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
     //1. Find blank tile
     int blankTileRow;
     int blankTileColumn;
@@ -72,195 +120,436 @@ vector<Node*> createChildren(Node* currentState) {
     //Check if blank tile is in position 0,0 in the array
     if (blankTileRow == 0 && blankTileColumn == 0) {
         //Move blank tile right
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[0][1];
         child1->puzzle[0][0] = tileBeingSwapped;
         child1->puzzle[0][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //Push back newly calculated child
         children.push_back(child1);
 
         //Move blank tile down
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[1][0];
         child2->puzzle[0][0] = tileBeingSwapped;
         child2->puzzle[1][0] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
     }
 
     //Check if blank tile is in position 0,1 in the array
     else if (blankTileRow == 0 && blankTileColumn == 1) {
         //Move blank tile right
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[0][2];
         child1->puzzle[0][1] = tileBeingSwapped;
         child1->puzzle[0][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile left
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[0][0];
         child2->puzzle[0][1] = tileBeingSwapped;
         child2->puzzle[0][0] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
 
         //Move blank tile down
-        Node* child3 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child3 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child3->puzzle[1][1];
         child3->puzzle[0][1] = tileBeingSwapped;
         child3->puzzle[1][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child3->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
         children.push_back(child3);
     }
 
     //Check if blank tile is in position 0,2 in the array
     else if (blankTileRow == 0 && blankTileColumn == 2) {
         //Move blank tile left
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[0][1];
         child1->puzzle[0][2] = tileBeingSwapped;
         child1->puzzle[0][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile down
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[1][2];
         child2->puzzle[0][2] = tileBeingSwapped;
         child2->puzzle[1][2] = 0;
+        
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
     }
 
     //Check if blank tile is in position 1,0 in the array
     else if (blankTileRow == 1 && blankTileColumn == 0) {
         //Move blank tile right
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[1][1];
         child1->puzzle[1][0] = tileBeingSwapped;
         child1->puzzle[1][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile down
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[2][0];
         child2->puzzle[1][0] = tileBeingSwapped;
         child2->puzzle[2][0] = 0;
+        
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
 
         //Move blank tile up
-        Node* child3 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child3 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child3->puzzle[0][0];
         child3->puzzle[1][0] = tileBeingSwapped;
         child3->puzzle[0][0] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child3->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
         children.push_back(child3);
     }
 
     //Check if blank tile is in position 1,1 in the array
     else if (blankTileRow == 1 && blankTileColumn == 1) {
         //Move blank tile left
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[1][0];
         child1->puzzle[1][1] = tileBeingSwapped;
         child1->puzzle[1][0] = 0;
+        
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile right
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[1][2];
         child2->puzzle[1][1] = tileBeingSwapped;
         child2->puzzle[1][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
 
         //Move blank tile down
-        Node* child3 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child3 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child3->puzzle[2][1];
         child3->puzzle[1][1] = tileBeingSwapped;
         child3->puzzle[2][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child3->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
         children.push_back(child3);
 
         //Move blank tile up
-        Node* child4 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child4 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child4->puzzle[0][1];
         child4->puzzle[1][1] = tileBeingSwapped;
         child4->puzzle[0][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child4->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child4->heuristic = misplacedTiles(child4);
+            child4->totalCost = child4->cost + child4->heuristic;
+        }
+
         children.push_back(child4);
     }
 
     //Check if blank tile is in position 1,2 in the array
     else if (blankTileRow == 1 && blankTileColumn == 2) {
         //Move blank tile left
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[1][1];
         child1->puzzle[1][2] = tileBeingSwapped;
         child1->puzzle[1][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile down
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[2][2];
         child2->puzzle[1][2] = tileBeingSwapped;
         child2->puzzle[2][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
 
         //Move blank tile up
-        Node* child3 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child3 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child3->puzzle[0][2];
         child3->puzzle[1][2] = tileBeingSwapped;
         child3->puzzle[0][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child3->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
         children.push_back(child3);
     }
 
     //Check if blank tile is in position 2,0 in the array
     else if (blankTileRow == 2 && blankTileColumn == 0) {
         //Move blank tile up
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[1][0];
         child1->puzzle[2][0] = tileBeingSwapped;
         child1->puzzle[1][0] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile right
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[2][1];
         child2->puzzle[2][0] = tileBeingSwapped;
         child2->puzzle[2][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
     }
 
     //Check if blank tile is in position 2,1 in the array
     else if (blankTileRow == 2 && blankTileColumn == 1) {
         //Move blank tile left
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[2][0];
         child1->puzzle[2][1] = tileBeingSwapped;
         child1->puzzle[2][0] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile right
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[2][2];
         child2->puzzle[2][1] = tileBeingSwapped;
         child2->puzzle[2][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
 
         //Move blank tile up
-        Node* child3 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child3 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child3->puzzle[1][1];
         child3->puzzle[2][1] = tileBeingSwapped;
         child3->puzzle[1][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child3->cost = currentState->cost + 1;
+
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
         children.push_back(child3);
     }
 
     //Check if blank tile is in position 2,2 in the array
     else if (blankTileRow == 2 && blankTileColumn == 2) {
         //Move blank tile left
-        Node* child1 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child1 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         int tileBeingSwapped = child1->puzzle[2][1];
         child1->puzzle[2][2] = tileBeingSwapped;
         child1->puzzle[2][1] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child1->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
         children.push_back(child1);
 
         //Move blank tile up
-        Node* child2 = new Node(currentState->puzzle, currentState->cost + 1);
+        Node* child2 = new Node(*currentState); //Create an exact copy of current state in order to obtain it's cost, heuristic, and total cost
         tileBeingSwapped = child2->puzzle[1][2];
         child2->puzzle[2][2] = tileBeingSwapped;
         child2->puzzle[1][2] = 0;
+
+        //Update cost to get to child in this g(n) is always 1
+        child2->cost = currentState->cost + 1;
+        
+        //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
+        if (useMisplacedTile == 2) {
+            child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
         children.push_back(child2);
     }
 
@@ -281,14 +570,20 @@ bool equalPuzzles(int puzzle1[3][3], int puzzle2[3][3]) {
     return true;
 }
 
-//Uniform Cost Search Algorithm
-Node* uniformCostSearch(Node* problem) {
+//General Search Algorithm
+Node* generalSearch(Node* problem, int algoChoice) {
     //1.Create priority queue
-    priority_queue<Node*> nodes;
+    priority_queue<Node*, vector<Node*>, greater<Node*> > nodes;
+    
     //Create vector of visited nodes to prevent repeat states
     vector<Node*> visited;
 
-    //Push root/initial state to priority queue
+    //Push root/initial state to priority queue with the the cost and heuristic cost if misplace tile algo is chosen if not we can skip it
+    if (algoChoice == 2) {
+        problem->heuristic = misplacedTiles(problem);
+        problem->totalCost = problem->cost + problem->heuristic;
+    }
+
     nodes.push(problem);
 
     //2. Enter while loop to see if we reach goal state and keep looping until nodes is empty
@@ -301,7 +596,9 @@ Node* uniformCostSearch(Node* problem) {
         //5. If current node is goal node return total cost and exit search
         if (isGoalState(currentNode)) {
             cout << "DONE" << endl;
-            cout << "Cost: " << currentNode->cost << endl;
+            cout << "G(n): " << currentNode->cost << endl;
+            cout << "H(n): " << currentNode->heuristic << endl;
+            cout << "F(n): " << currentNode->totalCost << endl;
             return currentNode;
             break;
         }
@@ -309,7 +606,7 @@ Node* uniformCostSearch(Node* problem) {
         //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
         else {
             //Get vector of all of currentNode's children
-            vector<Node*> children = createChildren(currentNode);
+            vector<Node*> children = createChildren(currentNode, algoChoice);
 
             //Erase any children that were already visited
             for (int i = 0; i < children.size(); ++i) {
@@ -343,6 +640,7 @@ Node* uniformCostSearch(Node* problem) {
 int main() {
     //Puzzle user enters
     int userPuzzle[3][3];
+    int algoChoice;
 
     //Prompt user to enter a puzzle
     cout << "Welcome to the 8 puzzle!!!" << endl;
@@ -358,8 +656,12 @@ int main() {
         }
     }
 
+    cout << endl;
+    cout << "Enter 1 for Uniform Cost Search or 2 for Misplaced Tile Heuristic: " << endl;
+    cin >> algoChoice;
+
     Node* problem = new Node(userPuzzle);
-    Node* solvedPuzzle = uniformCostSearch(problem);
+    Node* solvedPuzzle = generalSearch(problem, algoChoice);
 
     for (int i = 0; i < 3; ++i) {
         cout << "(";
