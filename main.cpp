@@ -3,19 +3,6 @@
 #include <queue>
 using namespace std;
 
-//Priority queue data structure that enqueues nodes in order of cost
-    //Pop first node at the beginning
-    //Needs to be able pop top cheapest costing node from queue (highest priority)
-    //Basically need a queue and each node in queue needs its associating cost 
-
-//Tree Structure
-    //Pop off cheapest costing node and if not goal state expands all its children
-    //Create a binary tree structure expanding the cheapest node until we reach the first possible goal state
-    //Need to keep track of current cost at any given node
-    //Only search new paths and not already visted paths
-    //if tie between costs choose first (does not matter
-    //Return path to goal state and total cost
-
 //Node struct that encapsulates all the necessary info for a node
 struct Node {
     int puzzle[3][3];
@@ -99,8 +86,167 @@ int misplacedTiles(Node* problem) {
     return count;
 }
 
+//Helper function that returns the manhattan distance
+int calculateDistance(int tile, Node* problem) {
+    //Initialize totalDistance to 0
+    int totalDistance = 0;
+
+    //For tile 1 we calculate the distance given its position in the puzzle
+    if ((tile == 1 && (problem->puzzle[0][1] == 1)) || (tile == 1 && (problem->puzzle[1][0] == 1))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 1 && (problem->puzzle[0][2] == 1)) || (tile == 1 && (problem->puzzle[1][1] == 1)) || (tile == 1 && (problem->puzzle[2][0] == 1))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 1 && (problem->puzzle[1][2] == 1)) || (tile == 1 && (problem->puzzle[2][1] == 1))) {
+        totalDistance += 3;
+    }
+
+    else if (tile == 1 && (problem->puzzle[2][2] == 1)) {
+        totalDistance += 4;
+    }
+
+    //For tile 2 we calculate the distance given its position in the puzzle
+    if ((tile == 2 && (problem->puzzle[0][0] == 2)) || (tile == 2 && (problem->puzzle[0][2] == 2)) || (tile == 2 && (problem->puzzle[1][1] == 2))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 2 && (problem->puzzle[1][0] == 2)) || (tile == 2 && (problem->puzzle[1][2] == 2)) || (tile == 2 && (problem->puzzle[2][1] == 2))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 2 && (problem->puzzle[2][0] == 2)) || (tile == 2 && (problem->puzzle[2][2] == 2))) {
+        totalDistance += 3;
+    }
+    
+    //For tile 3 we calculate the distance given its position in the puzzle
+    if ((tile == 3 && (problem->puzzle[0][1] == 3)) || (tile == 3 && (problem->puzzle[1][2] == 3))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 3 && (problem->puzzle[0][0] == 3)) || (tile == 3 && (problem->puzzle[1][1] == 3)) || (tile == 3 && (problem->puzzle[2][2] == 3))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 3 && (problem->puzzle[1][0] == 3)) || (tile == 3 && (problem->puzzle[2][1] == 3))) {
+        totalDistance += 3;
+    }
+
+    else if (tile == 3 && (problem->puzzle[2][0]) == 3) {
+        totalDistance += 4;
+    }
+
+    //For tile 4 we calculate the distance given its position in the puzzle
+    if ((tile == 4 && (problem->puzzle[0][0] == 4)) || (tile == 4 && (problem->puzzle[2][0] == 4)) || (tile == 4 && (problem->puzzle[1][1] == 4))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 4 && (problem->puzzle[0][1] == 4)) || (tile == 4 && (problem->puzzle[2][1] == 4)) || (tile == 4 && (problem->puzzle[1][2] == 4))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 4 && (problem->puzzle[0][2] == 4)) || (tile == 4 && (problem->puzzle[2][2] == 4))) {
+        totalDistance += 3;
+    }
+
+    //For tile 5 we calculate the distance given its position in the puzzle
+    if ((tile == 5 && (problem->puzzle[0][1] == 5)) || (tile == 5 && (problem->puzzle[1][0] == 5)) || (tile == 5 && (problem->puzzle[1][2] == 5)) || (tile == 5 && (problem->puzzle[2][1] == 5))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 5 && (problem->puzzle[0][0] == 5)) || (tile == 5 && (problem->puzzle[0][2] == 5)) || (tile == 5 && (problem->puzzle[2][0] == 5)) || (tile == 5 && (problem->puzzle[2][2] == 5))) {
+        totalDistance += 2;
+    }
+
+    //For tile 6 we calculate the distance given its position in the puzzle
+    if ((tile == 6 && (problem->puzzle[0][2] == 6)) || (tile == 6 && (problem->puzzle[2][2] == 6)) || (tile == 6 && (problem->puzzle[1][1] == 6))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 6 && (problem->puzzle[0][1] == 6)) || (tile == 6 && (problem->puzzle[2][1] == 6)) || (tile == 6 && (problem->puzzle[1][0] == 6))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 6 && (problem->puzzle[0][0] == 6)) || (tile == 6 && (problem->puzzle[2][0] == 6))) {
+        totalDistance += 3;
+    }
+
+    //For tile 7 we calculate the distance given its position in the puzzle
+    if ((tile == 7 && (problem->puzzle[1][0] == 7)) || (tile == 7 && (problem->puzzle[2][1] == 7))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 7 && (problem->puzzle[0][0] == 7)) || (tile == 7 && (problem->puzzle[1][1] == 7)) || (tile == 7 && (problem->puzzle[2][2] == 7))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 7 && (problem->puzzle[1][2] == 7)) || (tile == 7 && (problem->puzzle[0][1] == 7))) {
+        totalDistance += 3;
+    }
+
+    else if (tile == 7 && (problem->puzzle[0][2] == 7)) {
+        totalDistance += 4;
+    }
+
+    //For tile 8 we calculate the distance given its position in the puzzle
+    if ((tile == 8 && (problem->puzzle[2][0] == 8)) || (tile == 8 && (problem->puzzle[2][2] == 8)) || (tile == 8 && (problem->puzzle[1][1] == 8))) {
+        totalDistance += 1;
+    }
+
+    else if ((tile == 8 && (problem->puzzle[1][0] == 8)) || (tile == 8 && (problem->puzzle[1][2] == 8)) || (tile == 8 && (problem->puzzle[0][1] == 8))) {
+        totalDistance += 2;
+    }
+
+    else if ((tile == 8 && (problem->puzzle[0][0] == 8)) || (tile == 8 && (problem->puzzle[0][2] == 8))) {
+        totalDistance += 3;
+    }
+
+    return totalDistance;
+}
+
+//Helper function that returns the totalDistance using calculateDistance
+int manhattanDistance(Node* problem) {
+    int distance = 0;
+
+    if (problem->puzzle[0][0] != 1) {
+        distance += calculateDistance(1, problem);
+    }
+
+    if (problem->puzzle[0][1] != 2) {
+        distance += calculateDistance(2, problem);
+    }
+
+    if (problem->puzzle[0][2] != 3) {
+        distance += calculateDistance(3, problem);
+    }
+
+    if (problem->puzzle[1][0] != 4) {
+        distance += calculateDistance(4, problem);
+    }
+
+    if (problem->puzzle[1][1] != 5) {
+        distance += calculateDistance(5, problem);
+    }
+
+    if (problem->puzzle[1][2] != 6) {
+        distance += calculateDistance(6, problem);
+    }
+
+    if (problem->puzzle[2][0] != 7) {
+        distance += calculateDistance(7, problem);
+    }
+
+    if (problem->puzzle[2][1] != 8) {
+        distance += calculateDistance(8, problem);
+    }
+
+    return distance;
+}
+
 //Helper function that creates the children of the current state
-vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
+vector<Node*> createChildren(Node* currentState, int algoChoice) {
     //1. Find blank tile
     int blankTileRow;
     int blankTileColumn;
@@ -129,8 +275,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -147,8 +299,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -167,8 +325,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -184,8 +348,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -201,8 +371,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child3->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child3->heuristic = manhattanDistance(child3);
             child3->totalCost = child3->cost + child3->heuristic;
         }
 
@@ -221,8 +397,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -238,8 +420,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -258,8 +446,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -275,8 +469,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -292,8 +492,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child3->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child3->heuristic = manhattanDistance(child3);
             child3->totalCost = child3->cost + child3->heuristic;
         }
 
@@ -312,8 +518,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -329,8 +541,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -346,8 +564,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child3->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child3->heuristic = manhattanDistance(child3);
             child3->totalCost = child3->cost + child3->heuristic;
         }
 
@@ -363,8 +587,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child4->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child4->heuristic = misplacedTiles(child4);
+            child4->totalCost = child4->cost + child4->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child4->heuristic = manhattanDistance(child4);
             child4->totalCost = child4->cost + child4->heuristic;
         }
 
@@ -383,8 +613,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -400,8 +636,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -417,8 +659,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child3->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child3->heuristic = manhattanDistance(child3);
             child3->totalCost = child3->cost + child3->heuristic;
         }
 
@@ -437,8 +685,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -454,8 +708,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -474,8 +734,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -491,8 +757,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -508,8 +780,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child3->cost = currentState->cost + 1;
 
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child3->heuristic = misplacedTiles(child3);
+            child3->totalCost = child3->cost + child3->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child3->heuristic = manhattanDistance(child3);
             child3->totalCost = child3->cost + child3->heuristic;
         }
 
@@ -528,8 +806,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child1->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child1->heuristic = misplacedTiles(child1);
+            child1->totalCost = child1->cost + child1->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child1->heuristic = manhattanDistance(child1);
             child1->totalCost = child1->cost + child1->heuristic;
         }
 
@@ -545,8 +829,14 @@ vector<Node*> createChildren(Node* currentState, int useMisplacedTile) {
         child2->cost = currentState->cost + 1;
         
         //New heuristic addition for the children that calculates a child's misplaced tiles and add it to total cost: f(n) = g(n) + h(n)
-        if (useMisplacedTile == 2) {
+        if (algoChoice == 2) {
             child2->heuristic = misplacedTiles(child2);
+            child2->totalCost = child2->cost + child2->heuristic;
+        }
+
+        //New heuristic addition for the children that calculates a child's manhattan distance and add it to total cost: f(n) = g(n) + h(n)
+        else if (algoChoice == 3) {
+            child2->heuristic = manhattanDistance(child2);
             child2->totalCost = child2->cost + child2->heuristic;
         }
 
@@ -584,6 +874,11 @@ Node* generalSearch(Node* problem, int algoChoice) {
         problem->totalCost = problem->cost + problem->heuristic;
     }
 
+    else if (algoChoice == 3) {
+        problem->heuristic = manhattanDistance(problem);
+        problem->totalCost = problem->cost + problem->heuristic;
+    }
+
     nodes.push(problem);
 
     //2. Enter while loop to see if we reach goal state and keep looping until nodes is empty
@@ -595,10 +890,8 @@ Node* generalSearch(Node* problem, int algoChoice) {
 
         //5. If current node is goal node return total cost and exit search
         if (isGoalState(currentNode)) {
-            cout << "DONE" << endl;
-            cout << "G(n): " << currentNode->cost << endl;
-            cout << "H(n): " << currentNode->heuristic << endl;
-            cout << "F(n): " << currentNode->totalCost << endl;
+            cout << "Puzzle solved!!!" << endl;
+            cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
             return currentNode;
             break;
         }
@@ -656,13 +949,18 @@ int main() {
         }
     }
 
+    //Ask user which algorithm they want to run
     cout << endl;
-    cout << "Enter 1 for Uniform Cost Search or 2 for Misplaced Tile Heuristic: " << endl;
+    cout << "Enter 1 for Uniform Cost Search, 2 for Misplaced Tile Heuristic, or 3 for Manhattan Distance Heuristic: ";
     cin >> algoChoice;
+    cout << endl;
 
+    //Run the problem and store in solvedPuzzle
     Node* problem = new Node(userPuzzle);
     Node* solvedPuzzle = generalSearch(problem, algoChoice);
-
+    cout << endl;
+    
+    //Print out solved puzzle
     for (int i = 0; i < 3; ++i) {
         cout << "(";
         for (int j = 0; j < 3; ++j) {
