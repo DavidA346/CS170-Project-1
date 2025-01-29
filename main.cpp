@@ -864,70 +864,133 @@ bool equalPuzzles(int puzzle1[3][3], int puzzle2[3][3]) {
 Node* generalSearch(Node* problem, int algoChoice) {
     //1.Create priority queue
     priority_queue<Node*, vector<Node*>, greater<Node*> > nodes;
+    //Have separate queue for UCS Algorithm
+    priority_queue<Node*> ucsQueue;
+
     
     //Create vector of visited nodes to prevent repeat states
     vector<Node*> visited;
 
-    //Push root/initial state to priority queue with the the cost and heuristic cost if misplace tile algo is chosen if not we can skip it
+    //Push root/initial state to priority queue with the the cost and heuristic cost if misplace tile algo is chosen or manhattan distance algo if not we instead push to ucsQueue
     if (algoChoice == 2) {
         problem->heuristic = misplacedTiles(problem);
         problem->totalCost = problem->cost + problem->heuristic;
+        nodes.push(problem);
     }
 
     else if (algoChoice == 3) {
         problem->heuristic = manhattanDistance(problem);
         problem->totalCost = problem->cost + problem->heuristic;
+        nodes.push(problem);
     }
 
-    nodes.push(problem);
+    else {
+        ucsQueue.push(problem);
+    }
 
-    //2. Enter while loop to see if we reach goal state and keep looping until nodes is empty
-    while (!nodes.empty()) {
-        //4. Pop the head node
-        Node* currentNode = nodes.top();
-        visited.push_back(currentNode);
-        nodes.pop();
+    //If algo is misplace tile or manhattan distance run this code
+    if (algoChoice == 2 || algoChoice == 3) {
+        //2. Enter while loop to see if we reach goal state and keep looping until nodes is empty
+        while (!nodes.empty()) {
+            //4. Pop the head node
+            Node* currentNode = nodes.top();
+            visited.push_back(currentNode);
+            nodes.pop();
 
-        //5. If current node is goal node return total cost and exit search
-        if (isGoalState(currentNode)) {
-            cout << "Puzzle solved!!!" << endl;
-            cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
-            return currentNode;
-            break;
-        }
+            //5. If current node is goal node return total cost and exit search
+            if (isGoalState(currentNode)) {
+                cout << "Puzzle solved!!!" << endl;
+                cout << "G(n): " << currentNode->cost << endl;
+                cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
+                return currentNode;
+                break;
+            }
 
-        //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
-        else {
-            //Get vector of all of currentNode's children
-            vector<Node*> children = createChildren(currentNode, algoChoice);
+            //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
+            else {
+                //Get vector of all of currentNode's children
+                vector<Node*> children = createChildren(currentNode, algoChoice);
 
-            //Erase any children that were already visited
-            for (int i = 0; i < children.size(); ++i) {
-                bool hasBeenVisited = false;
-                for (int j = 0; j < visited.size(); ++j) {
-                    if (equalPuzzles(children.at(i)->puzzle, visited.at(j)->puzzle)) {
-                        hasBeenVisited = true;
-                        break;
+                //Erase any children that were already visited
+                for (int i = 0; i < children.size(); ++i) {
+                    bool hasBeenVisited = false;
+                    for (int j = 0; j < visited.size(); ++j) {
+                        if (equalPuzzles(children.at(i)->puzzle, visited.at(j)->puzzle)) {
+                            hasBeenVisited = true;
+                            break;
+                        }
+                    }
+
+                    //Erase a child that has been visited already to prevent visiting the same child
+                    if (hasBeenVisited) {
+                        children.erase(children.begin() + i);
+                        --i;
                     }
                 }
 
-                //Erase a child that has been visited already to prevent visiting the same child
-                if (hasBeenVisited) {
-                    children.erase(children.begin() + i);
-                    --i;
+                //Enqueue all new unvisited children to queue
+                for (int i = 0; i < children.size(); ++i) {
+                    nodes.push(children.at(i));
                 }
-            }
-
-            //Enqueue all new unvisited children to queue
-            for (int i = 0; i < children.size(); ++i) {
-                nodes.push(children.at(i));
-            }
         }
     }
 
     //3.If priority queue is empty then return 'No solution'
     cout << "No solution found" << endl;
     return nullptr;
+    }
+
+    //If algo is UCS run this code
+    else {
+        //2. Enter while loop to see if we reach goal state and keep looping until ucsQueue is empty
+        while (!ucsQueue.empty()) {
+            //4. Pop the head node
+            Node* currentNode = ucsQueue.top();
+            visited.push_back(currentNode);
+            ucsQueue.pop();
+
+            //5. If current node is goal node return total cost and exit search
+            if (isGoalState(currentNode)) {
+                cout << "Puzzle solved!!!" << endl;
+                cout << "G(n): " << currentNode->cost << endl;
+                cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
+                return currentNode;
+                break;
+            }
+
+            //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
+            else {
+                //Get vector of all of currentNode's children
+                vector<Node*> children = createChildren(currentNode, algoChoice);
+
+                //Erase any children that were already visited
+                for (int i = 0; i < children.size(); ++i) {
+                    bool hasBeenVisited = false;
+                    for (int j = 0; j < visited.size(); ++j) {
+                        if (equalPuzzles(children.at(i)->puzzle, visited.at(j)->puzzle)) {
+                            hasBeenVisited = true;
+                            break;
+                        }
+                    }
+
+                    //Erase a child that has been visited already to prevent visiting the same child
+                    if (hasBeenVisited) {
+                        children.erase(children.begin() + i);
+                        --i;
+                    }
+                }
+
+                //Enqueue all new unvisited children to queue
+                for (int i = 0; i < children.size(); ++i) {
+                    ucsQueue.push(children.at(i));
+                }
+        }
+    }
+
+    //3.If priority queue is empty then return 'No solution'
+    cout << "No solution found" << endl;
+    return nullptr;
+    }
 }
 
 int main() {
