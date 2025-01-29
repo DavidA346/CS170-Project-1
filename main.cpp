@@ -871,6 +871,9 @@ Node* generalSearch(Node* problem, int algoChoice) {
     //Create vector of visited nodes to prevent repeat states
     vector<Node*> visited;
 
+    //Counts the nodes we expand for stats
+    int expandedNodes = 0;
+
     //Push root/initial state to priority queue with the the cost and heuristic cost if misplace tile algo is chosen or manhattan distance algo if not we instead push to ucsQueue
     if (algoChoice == 2) {
         problem->heuristic = misplacedTiles(problem);
@@ -896,12 +899,15 @@ Node* generalSearch(Node* problem, int algoChoice) {
             Node* currentNode = nodes.top();
             visited.push_back(currentNode);
             nodes.pop();
+            expandedNodes++;
 
             //5. If current node is goal node return total cost and exit search
             if (isGoalState(currentNode)) {
+                //Prints out all necessary stats to compare algorithms
                 cout << "Puzzle solved!!!" << endl;
-                cout << "G(n): " << currentNode->cost << endl;
-                cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
+                cout << "Depth: " << currentNode->cost << endl;
+                cout << "Expanded nodes: " << expandedNodes << endl; 
+                cout << "Max queue size: " << nodes.size() << endl;
                 return currentNode;
                 break;
             }
@@ -948,12 +954,15 @@ Node* generalSearch(Node* problem, int algoChoice) {
             Node* currentNode = ucsQueue.top();
             visited.push_back(currentNode);
             ucsQueue.pop();
+            expandedNodes++;
 
             //5. If current node is goal node return total cost and exit search
             if (isGoalState(currentNode)) {
+                //Prints out all necessary stats to compare algorithms
                 cout << "Puzzle solved!!!" << endl;
-                cout << "G(n): " << currentNode->cost << endl;
-                cout << "Total cost to solve puzzle: " << currentNode->totalCost << endl;
+                cout << "Depth: " << currentNode->cost << endl;
+                cout << "Expanded nodes: " << expandedNodes << endl;
+                cout << "Max queue size: " << ucsQueue.size() << endl;
                 return currentNode;
                 break;
             }
@@ -1001,7 +1010,7 @@ int main() {
     //Prompt user to enter a puzzle
     cout << "Welcome to the 8 puzzle!!!" << endl;
     cout << "Please enter a puzzle of your choosing" << endl;
-    cout << "Make sure to enter the eight numbers in any order and enter a '0' to denote the blank tile: " << endl;
+    cout << "Make sure to enter the eight numbers in any order and enter a '0' to denote the blank tile, also press enter after every number: " << endl;
 
     //Push into vector user puzzle
     for (int i = 0; i < 3; ++i) {
@@ -1022,15 +1031,12 @@ int main() {
     Node* problem = new Node(userPuzzle);
     Node* solvedPuzzle = generalSearch(problem, algoChoice);
     cout << endl;
-    
-    //Print out solved puzzle
-    for (int i = 0; i < 3; ++i) {
-        cout << "(";
-        for (int j = 0; j < 3; ++j) {
-            cout << solvedPuzzle->puzzle[i][j];
-        }
-        cout << ")" << endl;
-    }
+
+    //Print out initial puzzle and goal state
+    cout << "Initial State               Goal State" << endl;
+    cout << "  [" << problem->puzzle[0][0] << " " << problem->puzzle[0][1] << " " << problem->puzzle[0][2] << "]" << "                     " << "[" << solvedPuzzle->puzzle[0][0] << " " << solvedPuzzle->puzzle[0][1] << " " << solvedPuzzle->puzzle[0][2] << "]" << endl;
+    cout << "  [" << problem->puzzle[1][0] << " " << problem->puzzle[1][1] << " " << problem->puzzle[1][2] << "]" << "      -------->      " << "[" << solvedPuzzle->puzzle[1][0] << " " << solvedPuzzle->puzzle[1][1] << " " << solvedPuzzle->puzzle[1][2] << "]" << endl;
+    cout << "  [" << problem->puzzle[2][0] << " " << problem->puzzle[2][1] << " " << problem->puzzle[2][2] << "]" << "                     " << "[" << solvedPuzzle->puzzle[2][0] << " " << solvedPuzzle->puzzle[2][1] << " " << solvedPuzzle->puzzle[2][2] << "]" << endl;
 
     return 0;
 }
