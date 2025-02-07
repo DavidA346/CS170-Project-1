@@ -22,10 +22,12 @@ struct Node {
             }
         }
     }
+};
 
-    //Have to overload '>' operator in order to compare two node costs for priority queue
-    bool operator>(const Node& rhs) {
-        return totalCost > rhs.totalCost;
+//To compare two node costs we need a custom comparator as overloading the > operator does not work with pointers
+struct cheapestCost{
+    bool operator()(Node* lhs, Node* rhs) {
+        return lhs->totalCost > rhs->totalCost;
     }
 };
 
@@ -246,7 +248,7 @@ int manhattanDistance(Node* problem) {
 }
 
 //Helper function that creates the children of the current state
-vector<Node*> createChildren(Node* currentState, int algoChoice) {
+vector<Node*> queueingFunction(Node* currentState, int algoChoice) {
     //1. Find blank tile
     int blankTileRow;
     int blankTileColumn;
@@ -863,15 +865,15 @@ bool equalPuzzles(int puzzle1[3][3], int puzzle2[3][3]) {
 //General Search Algorithm
 Node* generalSearch(Node* problem, int algoChoice) {
     //1.Create priority queue
-    priority_queue<Node*, vector<Node*>, greater<Node*> > nodes;
-    //Have separate queue for UCS Algorithm
-    priority_queue<Node*> ucsQueue;
+    priority_queue<Node*, vector<Node*>, cheapestCost> nodes;
 
-    
+    //Have separate queue for UCS Algorithm using a vector as it is simpler
+    vector<Node*> ucsQueue;
+
     //Create vector of visited nodes to prevent repeat states
     vector<Node*> visited;
 
-    //Counts the nodes we expand for stats
+    //Counts the nodes we expand and max queue size for stats
     int expandedNodes = 0;
 
     //Push root/initial state to priority queue with the the cost and heuristic cost if misplace tile algo is chosen or manhattan distance algo if not we instead push to ucsQueue
@@ -888,7 +890,7 @@ Node* generalSearch(Node* problem, int algoChoice) {
     }
 
     else {
-        ucsQueue.push(problem);
+        ucsQueue.push_back(problem);
     }
 
     //If algo is misplace tile or manhattan distance run this code
@@ -915,7 +917,7 @@ Node* generalSearch(Node* problem, int algoChoice) {
             //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
             else {
                 //Get vector of all of currentNode's children
-                vector<Node*> children = createChildren(currentNode, algoChoice);
+                vector<Node*> children = queueingFunction(currentNode, algoChoice);
 
                 //Erase any children that were already visited
                 for (int i = 0; i < children.size(); ++i) {
@@ -950,10 +952,10 @@ Node* generalSearch(Node* problem, int algoChoice) {
     else {
         //2. Enter while loop to see if we reach goal state and keep looping until ucsQueue is empty
         while (!ucsQueue.empty()) {
-            //4. Pop the head node
-            Node* currentNode = ucsQueue.top();
+            //4. Pop the front of the vector
+            Node* currentNode = ucsQueue.front();
             visited.push_back(currentNode);
-            ucsQueue.pop();
+            ucsQueue.erase(ucsQueue.begin());
             expandedNodes++;
 
             //5. If current node is goal node return total cost and exit search
@@ -970,7 +972,7 @@ Node* generalSearch(Node* problem, int algoChoice) {
             //6. Else enqueue all the children of current node with total cost from current node and add current node to visited list
             else {
                 //Get vector of all of currentNode's children
-                vector<Node*> children = createChildren(currentNode, algoChoice);
+                vector<Node*> children = queueingFunction(currentNode, algoChoice);
 
                 //Erase any children that were already visited
                 for (int i = 0; i < children.size(); ++i) {
@@ -989,9 +991,9 @@ Node* generalSearch(Node* problem, int algoChoice) {
                     }
                 }
 
-                //Enqueue all new unvisited children to queue
+                //Push back all new unvisited children to vector
                 for (int i = 0; i < children.size(); ++i) {
-                    ucsQueue.push(children.at(i));
+                    ucsQueue.push_back(children.at(i));
                 }
         }
     }
