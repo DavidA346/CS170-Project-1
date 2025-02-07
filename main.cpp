@@ -862,6 +862,25 @@ bool equalPuzzles(int puzzle1[3][3], int puzzle2[3][3]) {
     return true;
 }
 
+//Helper function to print out the traceback that is required
+void traceback(Node* currentState) {
+    cout << "The best state to expand with a g(n) = " << currentState->cost << " and h(n) = " << currentState->heuristic << " is ..." << endl;
+    
+    for (int i = 0; i < 3; ++i) {
+        cout << "[";
+        for (int j = 0; j < 3; ++j) {
+            if (j != 2) {
+                cout << currentState->puzzle[i][j] << ", ";
+            }
+            else {
+                cout << currentState->puzzle[i][j];
+            }
+        }
+        cout << "]" << endl;
+    }
+    cout << endl;
+}
+
 //General Search Algorithm
 Node* generalSearch(Node* problem, int algoChoice) {
     //1.Create priority queue
@@ -903,12 +922,16 @@ Node* generalSearch(Node* problem, int algoChoice) {
             nodes.pop();
             expandedNodes++;
 
+            //Call traceback for every node that is popped/looked at
+            traceback(currentNode);
+
             //5. If current node is goal node return total cost and exit search
             if (isGoalState(currentNode)) {
                 //Prints out all necessary stats to compare algorithms
-                cout << "Puzzle solved!!!" << endl;
-                cout << "Depth: " << currentNode->cost << endl;
-                cout << "Expanded nodes: " << expandedNodes << endl; 
+                cout << "Goal State!" << endl;
+                cout << endl;
+                cout << "Solution depth was " << currentNode->cost << endl;
+                cout << "Number of nodes expanded: " << expandedNodes << endl;
                 cout << "Max queue size: " << nodes.size() << endl;
                 return currentNode;
                 break;
@@ -958,12 +981,16 @@ Node* generalSearch(Node* problem, int algoChoice) {
             ucsQueue.erase(ucsQueue.begin());
             expandedNodes++;
 
+            //Call traceback for every node that is popped/looked at
+            traceback(currentNode);
+
             //5. If current node is goal node return total cost and exit search
             if (isGoalState(currentNode)) {
                 //Prints out all necessary stats to compare algorithms
-                cout << "Puzzle solved!!!" << endl;
-                cout << "Depth: " << currentNode->cost << endl;
-                cout << "Expanded nodes: " << expandedNodes << endl;
+                cout << "Goal State!" << endl;
+                cout << endl;
+                cout << "Solution depth was " << currentNode->cost << endl;
+                cout << "Number of nodes expanded: " << expandedNodes << endl;
                 cout << "Max queue size: " << ucsQueue.size() << endl;
                 return currentNode;
                 break;
@@ -1029,16 +1056,9 @@ int main() {
     cin >> algoChoice;
     cout << endl;
 
-    //Run the problem and store in solvedPuzzle
+    //Run the problem with the inputted algorithm
     Node* problem = new Node(userPuzzle);
-    Node* solvedPuzzle = generalSearch(problem, algoChoice);
-    cout << endl;
-
-    //Print out initial puzzle and goal state
-    cout << "Initial State               Goal State" << endl;
-    cout << "  [" << problem->puzzle[0][0] << " " << problem->puzzle[0][1] << " " << problem->puzzle[0][2] << "]" << "                     " << "[" << solvedPuzzle->puzzle[0][0] << " " << solvedPuzzle->puzzle[0][1] << " " << solvedPuzzle->puzzle[0][2] << "]" << endl;
-    cout << "  [" << problem->puzzle[1][0] << " " << problem->puzzle[1][1] << " " << problem->puzzle[1][2] << "]" << "      -------->      " << "[" << solvedPuzzle->puzzle[1][0] << " " << solvedPuzzle->puzzle[1][1] << " " << solvedPuzzle->puzzle[1][2] << "]" << endl;
-    cout << "  [" << problem->puzzle[2][0] << " " << problem->puzzle[2][1] << " " << problem->puzzle[2][2] << "]" << "                     " << "[" << solvedPuzzle->puzzle[2][0] << " " << solvedPuzzle->puzzle[2][1] << " " << solvedPuzzle->puzzle[2][2] << "]" << endl;
+    generalSearch(problem, algoChoice);
 
     return 0;
 }
